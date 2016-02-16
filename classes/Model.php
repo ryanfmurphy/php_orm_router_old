@@ -1,0 +1,100 @@
+<?php
+
+class Model {
+
+	function __construct($vars) {
+		foreach ($vars as $key => $val) {
+			$this->{$key} = $val;
+		}
+	}
+
+	private static function sqlLiteral($val) {
+		if (is_string($val)) {
+			$db = $GLOBALS['db'];
+			$val = mysqli_real_escape_string($db, $val);
+			return "'$val'";
+		}
+		elseif ($val === NULL) { return "NULL"; }
+		elseif ($val === true) { return 1; }
+		elseif ($val === false) { return 0; }
+		else { return $val; }
+	}
+
+	private static function sqlFieldsAndValsFromArray($vars) {
+		$keys = array_keys($vars);
+		$varNameList = implode(', ', $keys);
+
+		$varValLiterals = array();
+		foreach ($keys as $key) {
+			$val = $vars[$key];
+			$varValLiterals[] = Model::sqlLiteral($val);
+		}
+
+		$varValList = implode(', ', $varValLiterals);
+		return array($varNameList, $varValList);
+	}
+
+	public static function create($vars) {
+		if (!count($vars)) trigger_error("Model::create needs at least one key-value pair", E_USER_ERROR);
+
+		$db = $GLOBALS['db'];
+		if (!$db) trigger_error('problem connecting to database', E_USER_ERROR);
+
+		# populate object
+		$class = get_called_class();
+		$obj = new $class($vars);
+
+		list($varNameList, $varValList) =
+			Model::sqlFieldsAndValsFromArray($vars);
+
+		#todo generalize table name / ModelName
+		$sql = "
+			insert into contact ($varNameList)
+			values ($varValList);
+		";
+		$result = mysqli_query($db, $sql);
+
+		if ($result) {
+			#todo return object
+			return $result;
+		}
+		else {
+			trigger_error("Model::create could not create object", E_USER_ERROR);
+		}
+	}
+
+	public static function get($where=NULL) {
+		$sql = "
+			select * from contact
+		";
+		if ($where) {
+			$sql .= "where $where";
+		}
+		$sql .= ";";
+
+		return Model::query_fetch($sql);
+	}
+
+	public static function mysqli_fetch_all($result) {
+		$rows = array();
+		while ($row = mysqli_fetch_assoc($result)) {
+			$rows[] = $row;
+		}
+		return $rows;
+	}
+
+	public static function query_fetch($sql) {
+		$db = $GLOBALS['db'];
+		if ($db) {
+			$result = mysqli_query($db, $sql);
+			$rows = Model::mysqli_fetch_all($result);
+			return $rows;
+		}
+		else {
+			trigger_error("problem connecting to DB");
+			die("problem connecting to DB");
+		}
+	}
+
+}
+
