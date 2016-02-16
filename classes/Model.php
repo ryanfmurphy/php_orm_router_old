@@ -42,6 +42,7 @@ class Model {
 
 		# populate object
 		$class = get_called_class();
+		$table_name = table_name2ClassName($class); #todo fill out snake_case fn
 		$obj = new $class($vars);
 
 		list($varNameList, $varValList) =
@@ -49,7 +50,7 @@ class Model {
 
 		#todo generalize table name / ModelName
 		$sql = "
-			insert into contact ($varNameList)
+			insert into $table_name ($varNameList)
 			values ($varValList);
 		";
 		$result = mysqli_query($db, $sql);
@@ -64,8 +65,9 @@ class Model {
 	}
 
 	public static function get($where=NULL) {
+		$table_name = "company"; #todo
 		$sql = "
-			select * from contact
+			select * from $table_name
 		";
 		if ($where) {
 			$sql .= "where $where";

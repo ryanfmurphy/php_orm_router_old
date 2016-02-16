@@ -24,3 +24,13 @@ function CapCase2snake_case($strn) {
     return camelCase2snake_case(CapCase2camelCase($strn));
 }
 
+
+
+function table_name2ClassName($strn) {
+    return snake_case2CapCase($strn);
+}
+
+function ClassName2table_name($strn) {
+    return CapCase2snake_case($strn);
+}
+
