@@ -1,3 +1,8 @@
+# This version is deprecated.
+
+Use https://github.com/ryanfmurphy/php_orm_router instead!
+
+
 # PHP ORM/Router
 
 Lightweight PHP URL Router and ORM Framework
